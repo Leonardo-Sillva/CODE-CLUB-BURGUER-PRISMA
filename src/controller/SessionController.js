@@ -1,5 +1,7 @@
 import * as Yup from 'yup'
 import {prisma} from '../lib/prisma.ts'
+import jwt from 'jsonwebtoken'
+import authConfig from '../config/auth.js'
 import bcrypt from 'bcrypt'
 
 class SessionController{
@@ -33,7 +35,15 @@ class SessionController{
             return resp.status(400).json({error: "make sure your password or email are correct"})
         }
 
-        return resp.json({message: "Tudo OK!"})
+        return resp.json({
+            id: user.id,
+            email,
+            name: user.name,
+            admin: user.admin,
+            token: jwt.sign({id: user.id, name: user.name}, authConfig.secret, {
+                expiresIn: authConfig.expiresIn
+            })
+        })
     }
 }
 

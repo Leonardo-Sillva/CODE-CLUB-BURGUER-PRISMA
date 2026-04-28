@@ -1,5 +1,13 @@
 import express from 'express';
 import routes from './routes.js';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'url';
+
+import './database/database.js'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = resolve(__filename, '..');
+
 
 class App {
     constructor() {
@@ -11,6 +19,7 @@ class App {
 
     middlewares() {
         this.app.use(express.json())
+        this.app.use('/product-file', express.static(resolve(__dirname, '..', 'uploads')))
     }
 
     Routes() {
