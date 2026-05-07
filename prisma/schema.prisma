@@ -26,6 +26,7 @@ model products {
   id Int @id @default(autoincrement())
   name String
   price Decimal @db.Decimal(10, 2)
+  offer Boolean @default(false)
   categoryId  Int?
   category    categories? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   path String
@@ -36,6 +37,7 @@ model products {
 model categories {
   id Int @id @default(autoincrement())
   name String @unique
+  path String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
  

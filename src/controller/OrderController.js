@@ -43,35 +43,80 @@ class OrderController {
         })
 
 
+
         const editedProduct = updateProducts.map(product => {
             const productIndex = req.body.products.findIndex((requestProduct) => requestProduct.id === product.id)
 
 
 
             const newProduct = {
-            id: product.id,
+                id: product.id,
                 name: product.name,
-                    price: product.price,
-                        category: product.category.name,
-                            url: product.url,
-                                quantity: req.body.products[productIndex].quantity,
+                price: product.price,
+                category: product.category.name,
+                url: `http://localhost:3000/product-file/${product.path}`,
+                quantity: req.body.products[productIndex].quantity,
+            }
+
+            return newProduct
+        })
+
+        const order = {
+            user: {
+                id: req.userId,
+                name: req.userName,
+            },
+            products: editedProduct,
+            status: 'Pedido realizado'
         }
 
-        return newProduct
-    })
-
-    const order = {
-        user: {
-            id: req.userId,
-            name: req.userName,
-        },
-        products: editedProduct,
-        status: 'Pedido realizado'
-    }
-
-    const orderResponse = await Order.create(order)
+        const orderResponse = await Order.create(order)
 
         return resp.status(201).send(orderResponse)
+    }
+
+    async index(req, resp){
+        const orders = await Order.find()
+
+        return resp.json(orders)
+    }
+
+    async update(req, resp){
+        const schema = Yup.object().shape({
+            status: Yup.string().required(),
+        })
+
+        console.log(req)
+        try {
+            await schema.validateSync(req.body, { abortEarly: false })
+        } catch (err) {
+            return resp.status(400).json({ error: err.errors })
+        }
+
+        const {admin: isAdmin } = await prisma.users.findUnique({
+            where: {
+                id: req.userId
+            }
+        })
+
+        if (!isAdmin) {
+            return resp.status(401).json()
+        }
+
+
+
+
+        const {id} = req.params
+        const {status} = req.body
+
+        try{
+            await Order.updateOne({_id: id }, { status })
+        }catch(error){
+            return resp.status(400).json({error: error.message})
+        }
+        
+
+        return resp.json('status was updated')
     }
 }
 export default new OrderController()

@@ -1,37 +1,49 @@
 import * as Yup from 'yup'
 import { prisma } from '../lib/prisma.ts'
 
-class CategoryController{
-    async store(req, resp){
+class CategoryController {
+    async store(req, resp) {
         const schema = Yup.object().shape({
             name: Yup.string().required(),
         })
 
-        try{
+        try {
             await schema.validateSync(req.body, { abortEarly: false })
-       } catch(err) {
-        return resp.status(400).json({ error: err.errors })
-       }
-
-        const {name} = req.body
-
-        const categoryExists = await prisma.categories.findUnique({
-            where:{name} 
-        })
-
-        if(categoryExists){
-            return resp.status(400).json({error: "category already exists!"})
+        } catch (err) {
+            return resp.status(400).json({ error: err.errors })
         }
 
-        const {id} = await prisma.categories.create({
-            data: {name}
+        const { admin: isAdmin } = await prisma.users.findUnique({
+            where: {
+                id: req.userId
+            }
+        })
+
+        if (!isAdmin) {
+            return resp.status(401).json()
+        }
+
+        console.log(isAdmin)
+
+        const { name } = req.body
+
+        const categoryExists = await prisma.categories.findUnique({
+            where: { name }
+        })
+
+        if (categoryExists) {
+            return resp.status(400).json({ error: "category already exists!" })
+        }
+
+        const { id } = await prisma.categories.create({
+            data: { name }
         })
 
 
-       return resp.json({ name, id })
+        return resp.json({id, name})
     }
 
-    async index(req, resp){
+    async index(req, resp) {
         const category = await prisma.categories.findMany()
 
         console.log(`Aquiiiiiiiiiiiiiiiiiiiiiiii ${category}`)

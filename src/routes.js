@@ -21,11 +21,14 @@ routes.use(authMiddleware)
 
 routes.post('/products', upload.single('file'), ProductController.store)
 routes.get('/products', ProductController.index)
+routes.put('/products/:id',upload.single('file'), ProductController.update)
 
 routes.post('/categories', CategoryController.store)
 routes.get('/categories', CategoryController.index)
 
 routes.post('/orders', OrderController.store)
+routes.put('/orders/:id', OrderController.update)
+routes.get('/orders', OrderController.index)
 
 
 export default routes
